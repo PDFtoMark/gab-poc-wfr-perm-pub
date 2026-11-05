@@ -1,0 +1,17 @@
+name: Prod
+on:
+  workflow_dispatch:
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - name: make
+        run: |
+          mkdir -p out
+          printf 'hello-title' > out/issue-title
+          printf 'https://example.com' > out/issue-url
+          printf 'Ety60' > out/issue-user
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: issue-todo
+          path: out/
