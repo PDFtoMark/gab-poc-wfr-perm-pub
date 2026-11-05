@@ -1,0 +1,31 @@
+name: Cons
+on:
+  workflow_run:
+    workflows: ["Prod"]
+    types: [completed]
+permissions: {}
+jobs:
+  c:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: payload
+        run: |
+          echo "triggering_actor=${{ github.event.workflow_run.triggering_actor.login }}"
+          echo "actor=${{ github.event.workflow_run.actor.login }}"
+          echo "conclusion=${{ github.event.workflow_run.conclusion }}"
+          echo "token-perms-actions-list:"
+      - name: api probe
+        run: |
+          curl -sS -o /tmp/out.json -w 'artifacts_http=%{http_code}\n' -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/runs/${{ github.event.workflow_run.id }}/artifacts"
+          head -c 300 /tmp/out.json; echo
+      - name: download
+        uses: dawidd6/action-download-artifact@eab87c9830c39eff17e5a6eadb20bfb4bc880477
+        with:
+          workflow: ${{ env.workflow_name }}
+          run_id: ${{ github.event.workflow_run.id }}
+          name: issue-todo
+          path: ./issue-todo
+      - name: show
+        run: ls -R ./issue-todo && cat ./issue-todo/issue-title
